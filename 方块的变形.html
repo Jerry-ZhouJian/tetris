@@ -34,15 +34,38 @@
 		var x = 4;
 		//matrix 保存随机出来的方块，这样在运动中就可以一直使用同一个方块了。
 		var matrix = mold();
-	
+		var timer = null;
+		var onOff = false;
 		//生成地图
 		render(data,gc);
-		setInterval(function(){
-			fall();
-		}, 400)
-		
+		auto(400);
 		create(matrix);
 		play();
+		//自动走；
+		function auto(time){
+			timer = setInterval(function(){
+				fall();
+			}, time);
+		}
+		//方块变形。
+		function rotate(){
+			var arr = [];
+			var y = matrix.length;
+			var x = matrix[0].length;
+			//把arr变成一个二维数组。
+			for(var i=0;i<x;i++){
+				arr.push([]);
+			}
+
+			for(var i=0;i<y;i++){
+				for(var j=0;j<x;j++){
+					arr[j][y-1-i] = matrix[i][j]
+				}
+			}
+
+			matrix = arr;
+
+		}
 		function play(){
 			document.onkeydown = function(ev){
 				
@@ -65,17 +88,32 @@
 						create(matrix);
 					break;
 					case 38://方块变形
+						clearPre(matrix);
+						rotate(matrix);
+						create(matrix);
 					break;
 					case 40://加速向下移动。
+						if(onOff)return;
+						onOff = true;
+						clearInterval(timer);
+						auto(100);
 					break;
+				}
+			};
+			document.onkeyup = function(ev){
+				if(ev.keyCode == 40){
+					onOff = false;
+					clearInterval(timer);
+					auto(400);
 				}
 			};
 		}
 		//移动
 		function fall(){
-			//判断当放开移动到底部的时候就停下，从新生成一个新的方块从顶部开始下移。
+			//判断当方块移动到底部的时候就停下，从新生成一个新的方块从顶部开始下移。
 			if(collideTest()){
-				y=0;
+				y = 0;
+				x = 4;
 				matrix = mold();
 			}
 			
